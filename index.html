@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>House of Ardis</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
     
     <style>
+        /* GLOBAL RESET */
         body {
             margin: 0;
             padding: 0;
@@ -19,20 +20,22 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            /* Use dvh (Dynamic Viewport Height) to fix mobile address bar cutoff */
             height: 100vh;
+            height: 100dvh; 
             width: 100vw;
             font-family: 'Cormorant Garamond', serif; 
             overflow: hidden;
         }
 
+        /* THE STAGE */
         .book-stage {
-            /* Defines the stage for the book */
             width: 100vw;
             height: 100vh;
+            height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Shadow gives depth on desktop, subtle on mobile */
             filter: drop-shadow(0px 10px 30px rgba(0,0,0,0.8));
         }
 
@@ -40,7 +43,6 @@
             background-color: #000; 
             overflow: hidden;
             position: relative;
-            /* Ensures pages don't inherit weird borders */
             display: block; 
         }
 
@@ -54,8 +56,8 @@
             flex-direction: column;
             justify-content: center; 
             align-items: center; 
-            padding: 40px 20px;
-            gap: 20px; 
+            padding: 20px; 
+            gap: 15px; 
             box-shadow: inset 0 0 100px rgba(0,0,0,0.6); 
         }
 
@@ -83,6 +85,10 @@
             text-align: center;
             margin: 0; 
             margin-right: -0.5em; 
+            
+            /* Safety check: ensure text never overflows screen */
+            max-width: 100%;
+            white-space: nowrap; 
         }
 
         .art-full {
@@ -92,18 +98,26 @@
             display: block;
         }
 
-        /* --- MOBILE TWEAKS --- */
+        /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 768px) {
+            
+            /* Shrink text specifically for phones */
             .brand-main {
-                font-size: 3.5rem; /* readable but big */
-                letter-spacing: 0.3em;
+                font-size: 2.8rem; /* Smaller to fit the screen width */
+                letter-spacing: 0.3em; /* Slightly tighter spacing */
+                margin-right: -0.3em; /* Adjust compensation */
             }
+            
             .brand-top {
-                font-size: 0.9rem;
+                font-size: 0.8rem;
                 letter-spacing: 0.3em;
             }
+
+            /* Adjust container to account for mobile safe zones */
             .title-page {
-                gap: 15px;
+                padding: 10px; /* Less padding to give text more room */
+                width: 100%;
+                box-sizing: border-box;
             }
         }
     </style>
@@ -120,19 +134,14 @@
             
             const imageCount = 107; 
             const bookContainer = document.getElementById('my-book');
-
-            // --- MOBILE DETECTION ---
             const isMobile = window.innerWidth < 768;
 
-            // --- DIMENSION LOGIC ---
-            // Mobile: Full screen width/height for maximum impact
-            // Desktop: Fixed luxury book size (3:4 ratio)
+            // Dimensions: use window size for mobile to ensure full fit
             const bookWidth = isMobile ? window.innerWidth : 600;
             const bookHeight = isMobile ? window.innerHeight : 800;
 
             // 1. FRONT COVER
             const frontCover = document.createElement('div');
-            // If Mobile, we remove the "hard" cover class so it acts like a normal page 1
             frontCover.className = isMobile ? 'page title-page' : 'page title-page -cover'; 
             frontCover.innerHTML = `
                 <div class="brand-top">HOUSE OF</div>
@@ -145,15 +154,10 @@
                 const page = document.createElement('div');
                 page.className = 'page';
                 const img = document.createElement('img');
-                
                 img.src = `qed (${i}).jpg`; 
                 img.className = 'art-full';
                 img.alt = `Collection Piece ${i}`;
-                
-                img.onerror = function() { 
-                    this.src = `qed (${i}).png`; 
-                };
-                
+                img.onerror = function() { this.src = `qed (${i}).png`; };
                 page.appendChild(img);
                 bookContainer.appendChild(page);
             }
@@ -168,22 +172,14 @@
             backCover.appendChild(backImg);
             bookContainer.appendChild(backCover);
 
-            // 4. INITIALIZE BOOK
+            // 4. INITIALIZE
             const pageFlip = new St.PageFlip(bookContainer, {
                 width: bookWidth,   
                 height: bookHeight, 
-                
-                // CRITICAL FIX FOR MOBILE:
-                // 'fixed' size prevents it from trying to be clever and resizing
                 size: isMobile ? 'fixed' : 'stretch',
-                
                 maxWidth: 3000, 
                 maxHeight: 3000,
-                
-                // CRITICAL FIX: Disable 'Hard Cover' mode on mobile.
-                // This forces Page 1 (Cover) to be centered as a single page.
                 showCover: isMobile ? false : true, 
-                
                 mobileScrollSupport: false,
                 usePortrait: true,
                 startPage: 0
