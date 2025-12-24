@@ -26,24 +26,26 @@
         }
 
         .book-stage {
-            /* Desktop Default */
-            width: 95vw;
-            height: 90vh;
+            /* Defines the stage for the book */
+            width: 100vw;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            filter: drop-shadow(0px 30px 60px rgba(0,0,0,0.9));
+            /* Shadow gives depth on desktop, subtle on mobile */
+            filter: drop-shadow(0px 10px 30px rgba(0,0,0,0.8));
         }
 
         .page {
             background-color: #000; 
             overflow: hidden;
             position: relative;
+            /* Ensures pages don't inherit weird borders */
+            display: block; 
         }
 
         /* --- FRONT COVER --- */
         .title-page {
-            /* Looking for JPG now */
             background-image: url('qed (14).jpg'); 
             background-size: cover;
             background-position: center;
@@ -53,7 +55,7 @@
             justify-content: center; 
             align-items: center; 
             padding: 40px 20px;
-            gap: 30px; 
+            gap: 20px; 
             box-shadow: inset 0 0 100px rgba(0,0,0,0.6); 
         }
 
@@ -86,28 +88,20 @@
         .art-full {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* This ensures art fills the page even if we stretch it */
+            object-fit: cover; 
             display: block;
         }
 
-        /* --- MOBILE OPTIMIZATION --- */
+        /* --- MOBILE TWEAKS --- */
         @media (max-width: 768px) {
-            .book-stage {
-                width: 100vw;
-                height: 100vh; /* Use full screen on mobile */
-            }
-            
-            /* Shrink text so it fits on narrow screens */
             .brand-main {
-                font-size: 3rem; 
+                font-size: 3.5rem; /* readable but big */
                 letter-spacing: 0.3em;
             }
             .brand-top {
-                font-size: 1rem;
+                font-size: 0.9rem;
                 letter-spacing: 0.3em;
             }
-            
-            /* Adjust spacing on cover for mobile */
             .title-page {
                 gap: 15px;
             }
@@ -127,19 +121,19 @@
             const imageCount = 107; 
             const bookContainer = document.getElementById('my-book');
 
-            // --- SMART SIZING LOGIC ---
-            // If the screen is narrow (phone), we make the book taller to fill the screen.
-            // If desktop, we keep the classic book ratio.
+            // --- MOBILE DETECTION ---
             const isMobile = window.innerWidth < 768;
-            
-            // Desktop: 600x800 (3:4 ratio)
-            // Mobile:  Matching the window size almost exactly
+
+            // --- DIMENSION LOGIC ---
+            // Mobile: Full screen width/height for maximum impact
+            // Desktop: Fixed luxury book size (3:4 ratio)
             const bookWidth = isMobile ? window.innerWidth : 600;
             const bookHeight = isMobile ? window.innerHeight : 800;
 
             // 1. FRONT COVER
             const frontCover = document.createElement('div');
-            frontCover.className = 'page title-page'; 
+            // If Mobile, we remove the "hard" cover class so it acts like a normal page 1
+            frontCover.className = isMobile ? 'page title-page' : 'page title-page -cover'; 
             frontCover.innerHTML = `
                 <div class="brand-top">HOUSE OF</div>
                 <div class="brand-main">ARDIS</div>
@@ -152,12 +146,10 @@
                 page.className = 'page';
                 const img = document.createElement('img');
                 
-                // Optimized: Looks for JPG first
                 img.src = `qed (${i}).jpg`; 
                 img.className = 'art-full';
                 img.alt = `Collection Piece ${i}`;
                 
-                // Fallback to PNG if needed
                 img.onerror = function() { 
                     this.src = `qed (${i}).png`; 
                 };
@@ -176,18 +168,25 @@
             backCover.appendChild(backImg);
             bookContainer.appendChild(backCover);
 
-            // 4. INITIALIZE
+            // 4. INITIALIZE BOOK
             const pageFlip = new St.PageFlip(bookContainer, {
-                width: bookWidth,   // Dynamic Width
-                height: bookHeight, // Dynamic Height
+                width: bookWidth,   
+                height: bookHeight, 
                 
-                size: 'stretch',
+                // CRITICAL FIX FOR MOBILE:
+                // 'fixed' size prevents it from trying to be clever and resizing
+                size: isMobile ? 'fixed' : 'stretch',
+                
                 maxWidth: 3000, 
                 maxHeight: 3000,
-                maxShadowOpacity: 0.8,
-                showCover: true, 
+                
+                // CRITICAL FIX: Disable 'Hard Cover' mode on mobile.
+                // This forces Page 1 (Cover) to be centered as a single page.
+                showCover: isMobile ? false : true, 
+                
                 mobileScrollSupport: false,
-                usePortrait: true
+                usePortrait: true,
+                startPage: 0
             });
 
             const pages = document.querySelectorAll('.page');
