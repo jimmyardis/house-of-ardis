@@ -26,6 +26,7 @@
         }
 
         .book-stage {
+            /* Desktop Default */
             width: 95vw;
             height: 90vh;
             display: flex;
@@ -40,9 +41,9 @@
             position: relative;
         }
 
-        /* --- FRONT COVER SPECIFIC STYLES --- */
-        /* Renamed to .title-page so these styles don't mess up the back cover */
+        /* --- FRONT COVER --- */
         .title-page {
+            /* Looking for JPG now */
             background-image: url('qed (14).jpg'); 
             background-size: cover;
             background-position: center;
@@ -53,11 +54,9 @@
             align-items: center; 
             padding: 40px 20px;
             gap: 30px; 
-            
             box-shadow: inset 0 0 100px rgba(0,0,0,0.6); 
         }
 
-        /* "HOUSE OF" */
         .brand-top {
             font-size: 1.2rem;
             color: #f0f0f0; 
@@ -66,13 +65,11 @@
             font-weight: 600;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
             margin: 0; 
-            
-            margin-right: -0.4em; /* Fixes centering offset */
+            margin-right: -0.4em; 
             text-align: center;
             width: 100%;
         }
 
-        /* "ARDIS" */
         .brand-main {
             font-size: 5rem; 
             color: #d4af37; 
@@ -86,12 +83,34 @@
             margin-right: -0.5em; 
         }
 
-        /* Standard Art Page Images */
         .art-full {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* This ensures art fills the page even if we stretch it */
             display: block;
+        }
+
+        /* --- MOBILE OPTIMIZATION --- */
+        @media (max-width: 768px) {
+            .book-stage {
+                width: 100vw;
+                height: 100vh; /* Use full screen on mobile */
+            }
+            
+            /* Shrink text so it fits on narrow screens */
+            .brand-main {
+                font-size: 3rem; 
+                letter-spacing: 0.3em;
+            }
+            .brand-top {
+                font-size: 1rem;
+                letter-spacing: 0.3em;
+            }
+            
+            /* Adjust spacing on cover for mobile */
+            .title-page {
+                gap: 15px;
+            }
         }
     </style>
 </head>
@@ -108,7 +127,17 @@
             const imageCount = 107; 
             const bookContainer = document.getElementById('my-book');
 
-            // 1. FRONT COVER (Using the specific .title-page class)
+            // --- SMART SIZING LOGIC ---
+            // If the screen is narrow (phone), we make the book taller to fill the screen.
+            // If desktop, we keep the classic book ratio.
+            const isMobile = window.innerWidth < 768;
+            
+            // Desktop: 600x800 (3:4 ratio)
+            // Mobile:  Matching the window size almost exactly
+            const bookWidth = isMobile ? window.innerWidth : 600;
+            const bookHeight = isMobile ? window.innerHeight : 800;
+
+            // 1. FRONT COVER
             const frontCover = document.createElement('div');
             frontCover.className = 'page title-page'; 
             frontCover.innerHTML = `
@@ -117,46 +146,46 @@
             `;
             bookContainer.appendChild(frontCover);
 
-            // 2. INTERNAL PAGES (1 to 107)
+            // 2. INTERNAL PAGES
             for (let i = 1; i <= imageCount; i++) {
                 const page = document.createElement('div');
                 page.className = 'page';
                 const img = document.createElement('img');
                 
-                img.src = `qed (${i}).png`; 
+                // Optimized: Looks for JPG first
+                img.src = `qed (${i}).jpg`; 
                 img.className = 'art-full';
                 img.alt = `Collection Piece ${i}`;
                 
+                // Fallback to PNG if needed
                 img.onerror = function() { 
-                    this.src = `qed (${i}).jpg`; 
+                    this.src = `qed (${i}).png`; 
                 };
                 
                 page.appendChild(img);
                 bookContainer.appendChild(page);
             }
 
-            // 3. BACK COVER (qed 108)
+            // 3. BACK COVER
             const backCover = document.createElement('div');
-            backCover.className = 'page'; // Standard page class for full image
-            
+            backCover.className = 'page';
             const backImg = document.createElement('img');
-            backImg.src = 'qed (108).png';
+            backImg.src = 'qed (108).jpg';
             backImg.className = 'art-full';
-            backImg.alt = 'Back Cover';
-            backImg.onerror = function() { this.src = 'qed (108).jpg'; };
-            
+            backImg.onerror = function() { this.src = 'qed (108).png'; };
             backCover.appendChild(backImg);
             bookContainer.appendChild(backCover);
 
             // 4. INITIALIZE
             const pageFlip = new St.PageFlip(bookContainer, {
-                width: 600, 
-                height: 800, 
+                width: bookWidth,   // Dynamic Width
+                height: bookHeight, // Dynamic Height
+                
                 size: 'stretch',
                 maxWidth: 3000, 
                 maxHeight: 3000,
                 maxShadowOpacity: 0.8,
-                showCover: true, // This makes the first and last page feel "hard"
+                showCover: true, 
                 mobileScrollSupport: false,
                 usePortrait: true
             });
