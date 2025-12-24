@@ -53,7 +53,6 @@
             
             display: flex;
             flex-direction: column;
-            /* DEFAULT (Desktop): Center everything */
             justify-content: center; 
             align-items: center; 
             padding: 20px; 
@@ -100,22 +99,25 @@
         /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 768px) {
             
-            /* THE FIX: Move text higher, above the faces */
+            /* BACKGROUND POSITION TWEAK */
             .title-page {
-                justify-content: flex-start; /* Start from top */
+                /* 'center 80%' moves the focal point down, 
+                   which visually lifts the feet/dog up away from the bottom bar */
+                background-position: center 80%;
                 
-                /* CHANGED: 12vh is the sweet spot. 
-                   Clears the notch, but floats above the heads. */
+                justify-content: flex-start; 
                 padding-top: 12vh; 
-                
                 padding-bottom: 0;
             }
 
+            /* FONT SIZE TWEAK */
             .brand-main {
-                /* CHANGED: Slight shrink to keep the "S" safe from the edge */
-                font-size: 2.5rem; 
-                letter-spacing: 0.3em; 
-                margin-right: -0.3em; 
+                /* Reduced from 2.5 to 2.2 to save the "S" */
+                font-size: 2.2rem; 
+                
+                /* Tightened spacing slightly */
+                letter-spacing: 0.25em; 
+                margin-right: -0.25em; 
             }
             
             .brand-top {
